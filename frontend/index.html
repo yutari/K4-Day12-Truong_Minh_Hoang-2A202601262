@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Northstar Chat</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <style>
+    :root { --ink:#19334d; --muted:#6e8499; --line:#dce8f2; --ice:#f4f9fd; --blue:#2f83c5; --blue-dark:#17649d; --white:#fff; }
+    * { box-sizing:border-box } body { margin:0; min-height:100vh; color:var(--ink); font:15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; background:linear-gradient(135deg,#edf7fd,#f9fbff 55%,#eaf4fb); }
+    .shell { width:min(1180px,calc(100% - 32px)); margin:24px auto; display:grid; grid-template-columns:290px 1fr; min-height:calc(100vh - 48px); background:rgba(255,255,255,.82); border:1px solid #fff; border-radius:24px; box-shadow:0 24px 70px #b7d0e340; overflow:hidden; }
+    aside { padding:28px 22px; background:linear-gradient(180deg,#eaf5fd,#f4f9fd); border-right:1px solid var(--line); }
+    .brand { display:flex; gap:11px; align-items:center; font-weight:800; font-size:20px; letter-spacing:-.02em; }.mark { width:38px;height:38px;display:grid;place-items:center;border-radius:12px;color:white;background:linear-gradient(135deg,#44a9e7,#286fae);box-shadow:0 8px 18px #2c82be40; }
+    .eyebrow { margin:32px 0 6px; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.13em; font-weight:800; }
+    label { display:block; margin:13px 0 6px; color:var(--muted); font-size:12px; font-weight:700; } input, textarea { width:100%; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); padding:11px 12px; outline:0; font:inherit; } input:focus, textarea:focus { border-color:#81bde2; box-shadow:0 0 0 3px #81bde225; }
+    .hint { color:var(--muted); font-size:11px; margin-top:8px; }.status { margin-top:22px; padding:12px; display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:12px; color:var(--muted); font-size:12px; background:#ffffffa8; }.dot { width:8px;height:8px;border-radius:50%;background:#f0ad4e }.dot.online { background:#31b47a }
+    main { display:flex; flex-direction:column; min-width:0; }.top { padding:25px 32px 18px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; }.top h1 { margin:0; font-size:23px; letter-spacing:-.03em; }.top p { margin:3px 0 0;color:var(--muted);font-size:13px }.badge { padding:7px 11px; border-radius:99px; background:#e7f3fc; color:var(--blue-dark); font-size:12px; font-weight:700; }
+    #messages { flex:1; overflow:auto; padding:28px 32px; }.welcome { max-width:550px; margin:5vh auto; text-align:center; color:var(--muted) }.welcome h2 { color:var(--ink); margin:12px 0 5px; font-size:25px; }.bubble { max-width:75%; margin:0 0 18px; padding:12px 15px; border-radius:16px; white-space:pre-wrap; box-shadow:0 5px 16px #b8d2e220; }.bubble.user { margin-left:auto; color:white; background:linear-gradient(135deg,#3b9bd5,#286fae); border-bottom-right-radius:4px; }.bubble.assistant { margin-right:auto; background:#fff; border:1px solid var(--line); border-bottom-left-radius:4px; }.meta { margin-top:6px; color:#89a0b2; font-size:10px; }
+    .composer { padding:18px 32px 24px; border-top:1px solid var(--line); }.composer form { display:flex; gap:10px; align-items:end; }.composer textarea { min-height:48px; max-height:130px; resize:vertical; }.send { border:0; border-radius:11px; padding:13px 20px; color:white; background:var(--blue); font-weight:800; cursor:pointer; }.send:hover { background:var(--blue-dark) }.send:disabled { opacity:.55; cursor:wait }.foot { margin-top:8px; text-align:right; color:var(--muted); font-size:11px }
+    @media (max-width:760px) { .shell { grid-template-columns:1fr; margin:0; width:100%; min-height:100vh; border-radius:0 }.shell aside { border-right:0; border-bottom:1px solid var(--line); padding:18px 20px }.eyebrow,.hint { display:none }.status { margin-top:14px }.top,#messages,.composer { padding-left:20px; padding-right:20px }.bubble { max-width:88% } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <div class="brand"><span class="mark">✦</span><span>Northstar</span></div>
+      <div class="eyebrow">Kết nối service</div>
+      <label for="api">API endpoint</label><input id="api" value="http://localhost:8000" autocomplete="url" />
+      <label for="token">Bearer token</label><input id="token" type="password" placeholder="Nhập API_TOKEN" autocomplete="off" />
+      <label for="client">Client ID</label><input id="client" value="web-client" />
+      <div class="hint">Token chỉ được giữ trong trình duyệt hiện tại.</div>
+      <div class="status"><span class="dot" id="dot"></span><span id="status">Chưa kiểm tra backend</span></div>
+    </aside>
+    <main>
+      <header class="top"><div><h1>Trò chuyện với Northstar</h1><p>Trợ lý AI với lịch sử, giới hạn tốc độ và kiểm soát chi phí.</p></div><span class="badge">API online-ready</span></header>
+      <section id="messages"><div class="welcome" id="welcome"><div class="mark" style="margin:auto">✦</div><h2>Bắt đầu một cuộc trò chuyện</h2><p>Nhập token ở bên trái, sau đó hỏi bất kỳ điều gì.</p></div></section>
+      <div class="composer"><form id="form"><textarea id="message" placeholder="Viết tin nhắn..." required maxlength="2000"></textarea><button class="send" id="send">Gửi ↗</button></form><div class="foot" id="foot">0 lượt trò chuyện</div></div>
+    </main>
+  </div>
+  <script>
+    const $ = id => document.getElementById(id), api = () => $('api').value.replace(/\/$/, ''); let turns = 0;
+    function setStatus(text, online=false) { $('status').textContent=text; $('dot').classList.toggle('online', online); }
+    function addBubble(text, who, meta='') { $('welcome')?.remove(); const box=document.createElement('div'); box.className='bubble '+who; box.textContent=text; if(meta){const m=document.createElement('div');m.className='meta';m.textContent=meta;box.append(m)} $('messages').append(box); $('messages').scrollTop=$('messages').scrollHeight; }
+    async function health() { try { const r=await fetch(api()+'/healthz'); setStatus(r.ok?'Backend đang hoạt động':'Backend không sẵn sàng',r.ok); } catch(e){setStatus('Không kết nối được backend',false)} }
+    $('api').addEventListener('change',health); health();
+    $('form').addEventListener('submit', async e => { e.preventDefault(); const text=$('message').value.trim(), token=$('token').value.trim(); if(!text||!token){setStatus('Cần nhập token và tin nhắn');return} addBubble(text,'user'); $('message').value=''; $('send').disabled=true; setStatus('Đang xử lý...'); try { const r=await fetch(api()+'/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token,'X-Client-Id':$('client').value.trim()||'web-client'},body:JSON.stringify({message:text})}); const data=await r.json().catch(()=>({})); if(!r.ok) throw new Error((data.detail||('HTTP '+r.status))+' · '+r.status); addBubble(data.reply,'assistant',`${data.usage?.prompt??0} prompt + ${data.usage?.completion??0} completion · $${Number(data.usd_cost||0).toFixed(6)}`); turns++; $('foot').textContent=turns+' lượt trò chuyện'; setStatus('Backend đang hoạt động',true); } catch(err) { addBubble('Không thể gửi: '+err.message,'assistant'); setStatus('Có lỗi kết nối',false); } finally {$('send').disabled=false;$('message').focus()} });
+  </script>
+</body>
+</html>

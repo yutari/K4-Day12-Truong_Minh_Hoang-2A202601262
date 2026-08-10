@@ -18,6 +18,7 @@ RUN addgroup --system app && adduser --system --ingroup app app
 COPY --from=builder /install /usr/local
 COPY app ./app
 COPY utils ./utils
+COPY frontend ./frontend
 
 USER app
 
