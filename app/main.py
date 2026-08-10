@@ -124,6 +124,30 @@ def chat(
     bucket: TokenBucket = Depends(get_bucket),
     guard: CostGuard = Depends(get_cost_guard),
 ):
+    bucket.consume(client_id)
+    guard.check(client_id)
+    history = store.history(client_id)
+    result = generate_reply(payload.message, history)
+    store.add_turn(client_id, "user", payload.message)
+    store.add_turn(client_id, "assistant", result["text"])
+    guard.record(client_id, result["usd_cost"])
+    emit(
+        "chat_completed",
+        client_id=client_id,
+        prompt_tokens=result["prompt_tokens"],
+        completion_tokens=result["completion_tokens"],
+        usd_cost=result["usd_cost"],
+    )
+    return {
+        "reply": result["text"],
+        "client_id": client_id,
+        "turns_before": len(history),
+        "usd_cost": result["usd_cost"],
+        "usage": {
+            "prompt": result["prompt_tokens"],
+            "completion": result["completion_tokens"],
+        },
+    }
     """Gửi một tin nhắn tới service.
 
     TODO (CP3 + CP4) — làm ĐÚNG THỨ TỰ sau:
