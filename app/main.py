@@ -80,6 +80,9 @@ class ChatRequest(BaseModel):
 # ─────────────────────────────────────────────────────────────
 @app.get("/healthz")
 def healthz():
+    if shutdown_guard.draining:
+        return JSONResponse(status_code=503, content={"status": "draining"})
+    return {"status": "ok", "service": SERVICE_NAME, "version": SERVICE_VERSION}
     """Liveness probe — process còn sống không?
 
     TODO (CP1 + CP4):
